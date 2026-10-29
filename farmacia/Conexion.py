@@ -1,0 +1,153 @@
+import mysql.connector
+from mysql.connector import Error
+import bcrypt
+
+def obtener_conexion():
+    return mysql.connector.connect(
+        host='localhost',
+        user='root',
+        password='',
+        database='farmacia',
+        port='3306'
+    )
+
+def validar(username, password):
+    conexion = None
+    cursor = None
+    try:
+        conexion = obtener_conexion()
+        cursor = conexion.cursor(dictionary=True)
+
+        sql_usuario = "SELECT * FROM usuarios WHERE username = %s"
+        cursor.execute(sql_usuario, (username,))
+        usuario = cursor.fetchone()
+
+        # --- LÍNEAS DE DEPURACIÓN (Mira tu terminal al presionar Confirmar) ---
+        print("\n--- DEBUG INICIO DE SESIÓN ---")
+        print(f"Buscando usuario: '{username}'")
+        print(f"Resultado BD: {usuario}")
+
+        if usuario:
+            hash_almacenado = usuario["password"]
+            print(f"Password ingresada: '{password}'")
+            print(f"Password guardada en BD: '{hash_almacenado}'")
+
+            # 1. Si está encriptada con bcrypt
+            if hash_almacenado.startswith(("$2a$", "$2b$", "$2y$")):
+                if bcrypt.checkpw(password.encode('utf-8'), hash_almacenado.encode('utf-8')):
+                    print("-> ÉXITO: Contraseña correcta (bcrypt)")
+                    return usuario
+                else:
+                    print("-> ERROR: Contraseña bcrypt no coincide")
+
+            # 2. Si está en texto plano (ej: "123456")
+            elif hash_almacenado == password:
+                print("-> ÉXITO: Contraseña texto plano correcta. Actualizando a bcrypt...")
+                sal = bcrypt.gensalt()
+                nuevo_hash = bcrypt.hashpw(password.encode('utf-8'), sal).decode('utf-8')
+                cursor.execute(
+                    "UPDATE usuarios SET password = %s WHERE userid = %s",
+                    (nuevo_hash, usuario["userid"])
+                )
+                conexion.commit()
+                return usuario
+            else:
+                print("-> ERROR: Texto plano no coincide")
+        else:
+            print("-> ERROR: El usuario no existe en la base de datos")
+
+        return None
+
+    except Exception as err:
+        print(f"Error en BD: {err}")
+        return None
+
+    finally:
+        if cursor:
+            cursor.close()
+        if conexion and conexion.is_connected():
+            conexion.close()
+def guardar(username, nombre, telefono, rfc, direccion, estado, email, password, rango):
+    """Registra un nuevo trabajador encriptando la contraseña antes de guardar"""
+    if not all([username, nombre, telefono, rfc, direccion, estado, email, password, rango]):
+        return False, "Por favor complete todos los campos."
+
+    conexion = None
+    cursor = None
+    try:
+        conexion = obtener_conexion()
+        cursor = conexion.cursor(dictionary=True)
+
+        # 1. Verificar si el usuario ya existe
+        sql_verificar = "SELECT userid FROM usuarios WHERE username = %s"
+        cursor.execute(sql_verificar, (username,))
+        if cursor.fetchone():
+            return False, "El nombre de usuario ya está registrado."
+
+        # 2. Encriptar contraseña con bcrypt
+        sal = bcrypt.gensalt()
+        password_hash = bcrypt.hashpw(password.encode('utf-8'), sal).decode('utf-8')
+
+        # 3. Insertar usuario en la base de datos
+        sql_insert = """
+            INSERT INTO usuarios (username, nombre, telefono, rfc, direccion, estado, email, password, rango)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+        """
+        valores = (username, nombre, telefono, rfc, direccion, estado, email, password_hash, rango)
+
+        cursor.execute(sql_insert, valores)
+        conexion.commit()
+        return True, "Usuario registrado con éxito."
+
+    except Exception as e:
+        return False, f"Error de conexión con la base de datos: {str(e)}"
+
+    finally:
+        if cursor:
+            cursor.close()
+        if conexion and conexion.is_connected():
+            conexion.close()
+
+
+######################## proveedores
+
+def guardar(nombre, telefono, rfc, email, direccion, estado):
+    """Registra un nuevo trabajador encriptando la contraseña antes de guardar"""
+    if not all([nombre, telefono, rfc, email, direccion, estado]):
+        return False, "Por favor complete todos los campos."
+
+    conexion = None
+    cursor = None
+    try:
+        conexion = obtener_conexion()
+        cursor = conexion.cursor(dictionary=True)
+
+        # 1. Verificar si el usuario ya existe
+        sql_verificar = "SELECT userid FROM proveedores WHERE Nombre = %s"
+        cursor.execute(sql_verificar, (nombre,))
+        if cursor.fetchone():
+            return False, "El nombre de usuario ya está registrado."
+
+        # 2. Encriptar contraseña con bcrypt
+        sal = bcrypt.gensalt()
+        password_hash = bcrypt.hashpw(password.encode('utf-8'), sal).decode('utf-8')
+
+        # 3. Insertar usuario en la base de datos
+        sql_insert = """
+            INSERT INTO usuarios (username, nombre, telefono, rfc, direccion, estado, email, password, rango)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+        """
+        valores = (username, nombre, telefono, rfc, direccion, estado, email, password_hash, rango)
+
+        cursor.execute(sql_insert, valores)
+        conexion.commit()
+        return True, "Usuario registrado con éxito."
+
+    except Exception as e:
+        return False, f"Error de conexión con la base de datos: {str(e)}"
+
+    finally:
+        if cursor:
+            cursor.close()
+        if conexion and conexion.is_connected():
+            conexion.close()
