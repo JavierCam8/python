@@ -110,9 +110,8 @@ def guardar(username, nombre, telefono, rfc, direccion, estado, email, password,
 
 
 ######################## proveedores
-
-def guardar(nombre, telefono, rfc, email, direccion, estado):
-    """Registra un nuevo trabajador encriptando la contraseña antes de guardar"""
+def guardarprovedor(nombre, telefono, rfc, email, direccion, estado):
+    """Registra un nuevo proveedor en la base de datos"""
     if not all([nombre, telefono, rfc, email, direccion, estado]):
         return False, "Por favor complete todos los campos."
 
@@ -128,20 +127,92 @@ def guardar(nombre, telefono, rfc, email, direccion, estado):
         if cursor.fetchone():
             return False, "El nombre de usuario ya está registrado."
 
-        # 2. Encriptar contraseña con bcrypt
-        sal = bcrypt.gensalt()
-        password_hash = bcrypt.hashpw(password.encode('utf-8'), sal).decode('utf-8')
-
         # 3. Insertar usuario en la base de datos
         sql_insert = """
-            INSERT INTO usuarios (username, nombre, telefono, rfc, direccion, estado, email, password, rango)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+            INSERT INTO proveedores (nombre, telefono, rfc, email, direccion, estado)
+            VALUES (%s, %s, %s, %s, %s, %s)
         """
-        valores = (username, nombre, telefono, rfc, direccion, estado, email, password_hash, rango)
+        valores = (nombre, telefono, rfc, email, direccion, estado)
 
         cursor.execute(sql_insert, valores)
         conexion.commit()
         return True, "Usuario registrado con éxito."
+
+    except Exception as e:
+        return False, f"Error de conexión con la base de datos: {str(e)}"
+
+    finally:
+        if cursor:
+            cursor.close()
+        if conexion and conexion.is_connected():
+            conexion.close()
+def guardarproducto(marca, nombre, codigobarras, codigo, descripcion, precio_costo, precio_venta, idprovedor, requisito):
+    """Registra un nuevo producto en la base de datos"""
+    if not all([marca, nombre, codigobarras, codigo, descripcion, precio_costo, precio_venta, idprovedor, requisito]):
+        return False, "Por favor complete todos los campos."
+
+    conexion = None
+    cursor = None
+    try:
+        conexion = obtener_conexion()
+        cursor = conexion.cursor(dictionary=True)
+
+        # 1. Verificar si el usuario ya existe
+        sql_verificar = "SELECT userid FROM productos WHERE Nombre = %s"
+        cursor.execute(sql_verificar, (nombre,))
+        if cursor.fetchone():
+            return False, "El nombre de usuario ya está registrado."
+
+        # 3. Insertar usuario en la base de datos
+        sql_insert = """
+            INSERT INTO productos (marca, nombre, codigobarras, codigo, descripcion, precio_costo, precio_venta, idprovedor, requisito)
+            VALUES (%s, %s, %s, %s, %  s, %s, %s, %s, %s)
+        """
+        valores = (marca, nombre, codigobarras, codigo, descripcion, precio_costo, precio_venta, idprovedor, requisito)
+
+        cursor.execute(sql_insert, valores)
+        conexion.commit()
+        return True, "Producto registrado con éxito."
+
+    except Exception as e:
+        return False, f"Error de conexión con la base de datos: {str(e)}"
+
+    finally:
+        if cursor:
+            cursor.close()
+        if conexion and conexion.is_connected():
+            conexion.close()
+
+
+##################################### clientes 
+
+def guardarcliente(nombre, telefono, rfc, email, direccion, estado, username):
+    """Registra un nuevo cliente en la base de datos"""
+    if not all([nombre, telefono, rfc, email, direccion, estado, username]):
+        return False, "Por favor complete todos los campos."
+
+    conexion = None
+    cursor = None
+    try:
+        conexion = obtener_conexion()
+        cursor = conexion.cursor(dictionary=True)
+
+        # 1. Verificar si el usuario ya existe
+        sql_verificar = "SELECT userid FROM clientes WHERE Nombre = %s"
+        cursor.execute(sql_verificar, (nombre,))
+        if cursor.fetchone():
+            return False, "El nombre de usuario ya está registrado."
+
+        # 3. Insertar usuario en la base de datos
+        sql_insert = """
+            INSERT INTO clientes (nombre, telefono, rfc, email, direccion, estado, username)
+            VALUES (%s, %s, %s, %s, %s, %s, %s)
+        """
+        valores = (nombre, telefono, rfc, email, direccion, estado, username)
+
+        cursor.execute(sql_insert, valores)
+        conexion.commit()
+        return True, "Cliente registrado con éxito."
 
     except Exception as e:
         return False, f"Error de conexión con la base de datos: {str(e)}"

@@ -1,6 +1,6 @@
 import customtkinter as ctk
 from tkinter import messagebox, END
-from Conexion import guardar
+from Conexion import guardarcliente
 
 class FrameClientes(ctk.CTkFrame):
     def __init__(self, parent):
@@ -86,6 +86,15 @@ class FrameClientes(ctk.CTkFrame):
         self.inestadobox=ctk.CTkEntry(self.frame_informacion, width=300)
         self.inestadobox.pack(anchor="nw", pady=5)
 
+        self.indireccion=ctk.CTkLabel(
+            self.frame_informacion,
+            text="Direccion",
+            font=("Arial", 12, "bold")
+        )
+        self.indireccion.pack(anchor="nw", pady=3)
+        self.indireccionbox=ctk.CTkEntry(self.frame_informacion, width=300)
+        self.indireccionbox.pack(anchor="nw", pady=5)
+
         self.inemail=ctk.CTkLabel(
             self.frame_informacion,
             text="Email",
@@ -95,14 +104,7 @@ class FrameClientes(ctk.CTkFrame):
         self.inemailbox=ctk.CTkEntry(self.frame_informacion, width=300)
         self.inemailbox.pack(anchor="nw", pady=5)
 
-        self.inrango=ctk.CTkLabel(
-            self.frame_informacion,
-            text="Rango",
-            font=("Arial", 12, "bold")
-        )
-        self.inrango.pack(anchor="nw", pady=3)
-        self.inrangobox=ctk.CTkEntry(self.frame_informacion, width=300)
-        self.inrangobox.pack(anchor="nw", pady=5)
+        
 
         self.btnguardarcambio=ctk.CTkButton(
             self.frame_informacion,
@@ -169,23 +171,20 @@ class FrameClientes(ctk.CTkFrame):
 
 
     def registrar(self):
-        username = self.userbox.get().strip()
-        nombre = self.nombrebox.get().strip()
-        telefono = self.telefonobox.get().strip()
-        rfc = self.rfcbox.get().strip()
-        direccion = self.direccionbox.get().strip()
-        estado = self.estadobox.get().strip()
-        email = self.emailbox.get().strip()
+        username = self.inuserbox.get().strip()
+        nombre = self.innombrebox.get().strip()
+        telefono = self.intelefonobox.get().strip()
+        rfc = self.inrfcbox.get().strip()
+        direccion = self.indireccionbox.get().strip()
+        estado = self.inestadobox.get().strip()
+        email = self.inemailbox.get().strip()
 
-        if rango == "Seleccione Rango" or rango not in ["admin", "ventas", "almacen"]:
-            messagebox.showerror("Error", "Por favor seleccione un rango válido.")
-            return
-
-        if not all([username, nombre, telefono, rfc, direccion, estado, email, password, rango]):
+        
+        if not all([username, nombre, telefono, rfc, direccion, estado, email]):
             messagebox.showerror("Error", "Datos incompletos.")
             return
 
-        exito, mensaje = guardar(username, nombre, telefono, rfc, direccion, estado, email, password, rango)
+        exito, mensaje = guardarcliente(username, nombre, telefono, rfc, direccion, estado, email, username)
 
         if exito:
             messagebox.showinfo("Éxito", mensaje)
@@ -194,13 +193,13 @@ class FrameClientes(ctk.CTkFrame):
             messagebox.showerror("Error", mensaje)
 
     def cancelar(self):
-        self.userbox.delete(0, END)
-        self.nombrebox.delete(0, END)
-        self.telefonobox.delete(0, END)
-        self.rfcbox.delete(0, END)
-        self.direccionbox.delete(0, END)
-        self.estadobox.delete(0, END)
-        self.emailbox.delete(0, END)
+        self.inuserbox.delete(0, END)        
+        self.innombrebox.delete(0, END)
+        self.intelefonobox.delete(0, END)
+        self.inrfcbox.delete(0, END)
+        self.indireccionbox.delete(0, END)
+        self.inestadobox.delete(0, END)
+        self.inemailbox.delete(0, END)
 #########################boton de informacion
     def cambiar(self):
         pass

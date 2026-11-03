@@ -2,6 +2,8 @@ import customtkinter as ctk
 import tkinter as tk
 from tkinter import messagebox
 
+from Conexion import guardarprovedor
+
 class FrameProvedor(ctk.CTkFrame):
     def __init__(self, parent):
         super(). __init__(parent)
@@ -19,7 +21,7 @@ class FrameProvedor(ctk.CTkFrame):
         self.actualizarprovedor=ctk.CTkFrame(self.contenedor)
         self.actualizarprovedor.pack(side="left", fill="both", expand=True, padx=(0,5))
 
-        self.productos=ctk.CTkFrame(self.contenedor)
+        self.productos=ctk.CTkScrollableFrame(self.contenedor, scrollbar_button_color="#2456D4", scrollbar_button_hover_color="#0F0DAA")
         self.productos.pack(side="left", fill="both", expand=True, padx=5)
 
         self.pedidos=ctk.CTkFrame(self.contenedor)
@@ -124,6 +126,7 @@ class FrameProvedor(ctk.CTkFrame):
             fg_color="#de1323",
             hover_color="#690e15",
             text_color="#FFFFFF",
+            width=300,
             command=self.cancelarcambio
         )
         self.btcancelarcambio.pack(pady=2)
@@ -152,6 +155,8 @@ class FrameProvedor(ctk.CTkFrame):
             font=("Arial", 12, "bold")
         )
         self.nombreproducto.pack(pady=2)
+        self.nombreproductobox=ctk.CTkEntry(self.productos, width=300)
+        self.nombreproductobox.pack(pady=2)
         
         self.marca=ctk.CTkLabel(
             self.productos,
@@ -180,6 +185,24 @@ class FrameProvedor(ctk.CTkFrame):
         self.codigobox=ctk.CTkEntry(self.productos, width=300)
         self.codigobox.pack(pady=2)
 
+        self.descripcion=ctk.CTkLabel(
+            self.productos,
+            text="Descripcion del producto",
+            font=("Arial", 12, "bold")
+        )
+        self.descripcion.pack(pady=2)
+        self.descripcionbox=ctk.CTkEntry(self.productos, width=300)
+        self.descripcionbox.pack(pady=2)
+
+        self.requisito=ctk.CTkLabel(
+            self.productos,
+            text="Receta o Identificación para comprar el producto",
+            font=("Arial", 12, "bold")
+        )
+        self.requisito.pack(pady=2)
+        self.requisitobox=ctk.CTkComboBox(self.productos, width=300, values=["Receta", "Identificación", "Ninguno"])
+        self.requisitobox.pack(pady=2)
+
         self.categoria=ctk.CTkLabel(
             self.productos,
             text="Categoria del producto",
@@ -206,6 +229,15 @@ class FrameProvedor(ctk.CTkFrame):
         self.provedor.pack(pady=2)
         self.provedorbox=ctk.CTkComboBox(self.productos, values=[""], width=300)
         self.provedorbox.pack(pady=2)
+
+        self.venta=ctk.CTkLabel(
+            self.productos,
+            text="Precio de venta del producto",
+            font=("Arial", 12, "bold")
+        )
+        self.venta.pack(pady=2)
+        self.ventabox=ctk.CTkEntry(self.productos, width=300)
+        self.ventabox.pack(pady=2)
 
         self.btpguardar=ctk.CTkButton(
             self.productos,
@@ -287,6 +319,11 @@ class FrameProvedor(ctk.CTkFrame):
             messagebox.showerror("Error", "Datos incompletos")
             return
         exito, mesaje=guardarprovedor(nombre, telefono, rfc, email, direccion, estado)
+        if exito:
+            messagebox.showinfo("Éxito", mesaje)
+            self.cancelar()
+        else:
+            messagebox.showerror("Error", mesaje)
 
 
 
