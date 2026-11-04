@@ -222,3 +222,57 @@ def guardarcliente(nombre, telefono, rfc, email, direccion, estado, username):
             cursor.close()
         if conexion and conexion.is_connected():
             conexion.close()
+
+########################### ventas
+
+def buscar_producto_por_codigo(codigo, codigobarras):
+    try:
+        """Busca un producto en la base de datos por su codigo"""
+        conexion = obtener_conexion()
+        cursor = conexion.cursor(dictionary=True)
+        sql = "SELECT codigo, codigobarras FROM productos WHERE codigo = %s OR  codigobarras = %s"
+        cursor.execute(sql, (codigo, codigobarras))
+        productos = cursor.fetchall()
+        cursor.close()
+        conexion.close()
+        return productos
+    except Exception as e:
+        return False, f"Error de conexion con la base de datos: {str(e)}"
+
+def revisar_stock(codigo):
+    try:
+        """Revisa el stock de un producto en la base de datos por su codigo"""
+        conexion = obtener_conexion()
+        cursor = conexion.cursor(dictionary=True)
+        sql = "SELECT stock FROM productos WHERE codigo = %s"
+        cursor.execute(sql, (codigo))
+        stock = cursor.fetchone()
+        cursor.close()
+        conexion.close()
+        return stock
+    except Exception as e:
+        return False, f"Error de conexion con la base de datos: {str(e)}"
+
+#############################################
+def buscar_productos_coincidentes(criterio):
+    try:
+        conexion = mysql.connector.connect(...)
+        cursor = conexion.cursor(dictionary=True)
+        
+        # Busca coincidencias en código de barras O en el nombre
+        query = """
+            SELECT codigobarras, nombre, stock, precio_venta 
+            FROM productos 
+            WHERE codigobarras LIKE %s OR nombre LIKE %s 
+            LIMIT 20
+        """
+        patron = f"%{criterio}%"
+        cursor.execute(query, (patron, patron))
+        
+        resultados = cursor.fetchall()
+        cursor.close()
+        conexion.close()
+        return resultados
+    except Exception as e:
+        print(f"Error en búsqueda: {e}")
+        return []

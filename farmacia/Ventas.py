@@ -1,8 +1,14 @@
 import customtkinter as ctk
+from tkinter import messagebox, END
+from Conexion import buscar_producto_por_codigo, revisar_stock
+from Busquda import VentanaBusqueda
 
 class FrameVentas(ctk.CTkFrame):
     def __init__(self, parent):
         super().__init__(parent)
+
+        self.lista_productos = []
+        totalprecio=0.00
 
         self.contenedor = ctk.CTkFrame(self, fg_color="transparent")
         self.contenedor.pack(fill="both", expand=True, padx=15, pady=10)
@@ -43,7 +49,7 @@ class FrameVentas(ctk.CTkFrame):
         self.frame_columnas.grid_rowconfigure(0, weight=1)
 
         # SECCIÓN 1: CÓDIGO
-        self.codigoframe = ctk.CTkFrame(self.frame_columnas, fg_color="#2B2B2B", corner_radius=8)
+        self.codigoframe = ctk.CTkScrollableFrame(self.frame_columnas, fg_color="#2B2B2B", corner_radius=8)
         self.codigoframe.grid(row=0, column=0, sticky="nsew", padx=5, pady=5)
 
         self.lcodigo = ctk.CTkLabel(
@@ -54,7 +60,7 @@ class FrameVentas(ctk.CTkFrame):
         self.lcodigo.pack(pady=10)
 
         # SECCIÓN 2: CANTIDAD
-        self.cantidadframe = ctk.CTkFrame(self.frame_columnas, fg_color="#2B2B2B", corner_radius=8)
+        self.cantidadframe = ctk.CTkScrollableFrame(self.frame_columnas, fg_color="#2B2B2B", corner_radius=8)
         self.cantidadframe.grid(row=0, column=1, sticky="nsew", padx=5, pady=5)
 
         self.lcantidad = ctk.CTkLabel(
@@ -65,7 +71,7 @@ class FrameVentas(ctk.CTkFrame):
         self.lcantidad.pack(pady=10)
 
         # SECCIÓN 3: DETALLES
-        self.detallesframe = ctk.CTkFrame(self.frame_columnas, fg_color="#2B2B2B", corner_radius=8)
+        self.detallesframe = ctk.CTkScrollableFrame(self.frame_columnas, fg_color="#2B2B2B", corner_radius=8)
         self.detallesframe.grid(row=0, column=2, sticky="nsew", padx=5, pady=5)
 
         self.ldetalles = ctk.CTkLabel(
@@ -76,7 +82,7 @@ class FrameVentas(ctk.CTkFrame):
         self.ldetalles.pack(pady=10)
 
         # SECCIÓN 4: PRECIO UNITARIO
-        self.preciounitario = ctk.CTkFrame(self.frame_columnas, fg_color="#2B2B2B", corner_radius=8)
+        self.preciounitario = ctk.CTkScrollableFrame(self.frame_columnas, fg_color="#2B2B2B", corner_radius=8)
         self.preciounitario.grid(row=0, column=3, sticky="nsew", padx=5, pady=5)
 
         self.lpreciounitario = ctk.CTkLabel(
@@ -87,7 +93,7 @@ class FrameVentas(ctk.CTkFrame):
         self.lpreciounitario.pack(pady=10)
 
         # SECCIÓN 5: PRECIO TOTAL
-        self.preciototal = ctk.CTkFrame(self.frame_columnas, fg_color="#2B2B2B", corner_radius=8)
+        self.preciototal = ctk.CTkScrollableFrame(self.frame_columnas, fg_color="#2B2B2B", corner_radius=8)
         self.preciototal.grid(row=0, column=4, sticky="nsew", padx=5, pady=5)
 
         self.lpreciototal = ctk.CTkLabel(
@@ -98,7 +104,7 @@ class FrameVentas(ctk.CTkFrame):
         self.lpreciototal.pack(pady=10)
 
         # SECCIÓN 6: TOTAL Y RESUMEN
-        self.total = ctk.CTkFrame(self.frame_columnas, fg_color="#2B2B2B", corner_radius=8)
+        self.total = ctk.CTkScrollableFrame(self.frame_columnas, fg_color="#2B2B2B", corner_radius=8)
         self.total.grid(row=0, column=5, sticky="nsew", padx=5, pady=5)
 
         self.ltotal = ctk.CTkLabel(
@@ -159,6 +165,22 @@ class FrameVentas(ctk.CTkFrame):
         self.blcantidadbox = ctk.CTkEntry(self.f_cant, width=120)
         self.blcantidadbox.pack(pady=(2, 0))
 
+        # Campo: Precio
+        self.f_precio = ctk.CTkFrame(self.frame_medio_inner, fg_color="transparent")
+        self.f_precio.pack(side="left", padx=5)
+        self.blprecio = ctk.CTkLabel(self.f_precio, text="Precio:", font=("Arial", 11, "bold"))
+        self.blprecio.pack(anchor="w")
+        self.blpreciobox = ctk.CTkEntry(self.f_precio, width=120)
+        self.blpreciobox.pack(pady=(2, 0))
+
+        # Campo: Total
+        self.f_total = ctk.CTkFrame(self.frame_medio_inner, fg_color="transparent")
+        self.f_total.pack(side="left", padx=5)
+        self.bltotal = ctk.CTkLabel(self.f_total, text="Total:", font=("Arial", 11, "bold"))
+        self.bltotal.pack(anchor="w")
+        self.bltotalbox = ctk.CTkEntry(self.f_total, width=120)
+        self.bltotalbox.pack(pady=(2, 0))
+
         # Campo: Detalles
         self.f_det = ctk.CTkFrame(self.frame_medio_inner, fg_color="transparent")
         self.f_det.pack(side="left", fill="x", expand=True, padx=5)
@@ -174,9 +196,8 @@ class FrameVentas(ctk.CTkFrame):
         self.btsubir = ctk.CTkButton(
             self.f_btns,
             text="Subir",
-            fg_color="#2DE02D",
-            hover_color="#187F18",
-            text_color="#000000",
+            fg_color="#2CCC3F",
+            hover_color="#11723A",
             width=65,
             font=("Arial", 12, "bold"),
             command=self.subir
@@ -344,17 +365,149 @@ class FrameVentas(ctk.CTkFrame):
         self.lf7 = ctk.CTkLabel(self.item_f7, text="Buscar nota", font=("Arial", 11, "bold"))
         self.lf7.pack(side="left")
 
-    def subir(self):
-        pass
+        self.item_f8 = ctk.CTkFrame(self.frame_cmd_inner, fg_color="transparent")
+        self.item_f8.pack(side="left", padx=6)
+
+        self.lf8 = ctk.CTkButton(
+            self.item_f8,
+            text="F8",
+            fg_color="#FFFFFF",
+            hover_color="#E0E0E0",
+            text_color="#000000",
+            width=38,
+            height=28,
+            font=("Arial", 11, "bold"),
+            command=self.subir
+        )
+        self.lf8.pack(side="left", padx=(0, 4))
+        self.lf8 = ctk.CTkLabel(self.item_f8, text="Pagar", font=("Arial", 11, "bold"))
+        self.lf8.pack(side="left")
+
+        self.item_f9 = ctk.CTkFrame(self.frame_cmd_inner, fg_color="transparent")
+        self.item_f9.pack(side="left", padx=6)
+
+        self.lf9 = ctk.CTkButton(
+            self.item_f9,
+            text="F9",
+            fg_color="#FFFFFF",
+            hover_color="#E0E0E0",
+            text_color="#000000",
+            width=38,
+            height=28,
+            font=("Arial", 11, "bold"),
+            command=self.subir
+        )
+        self.lf9.pack(side="left", padx=(0, 4))
+        self.lf9 = ctk.CTkLabel(self.item_f9, text="Descuento", font=("Arial", 11, "bold"))
+        self.lf9.pack(side="left")
+
+        self.blcodigobox.bind("<Return>", self.enter)
+        self.bind("<F1>", lambda e: self.busquedacodigo())
 
     def cancelar(self):
         pass
 
-    def enter(self):
-        pass
+    def enter(self, event=None):
+        codigo = self.blcodigobox.get().strip()
 
+        if not codigo:
+            return
+
+        try:
+            cantidad = int(self.blcantidadbox.get().strip())
+            if cantidad <=0:
+                messagebox.showerror("Error", "No se premiten cantidades negativas")
+                return
+            
+        except ValueError:
+            cantidad = 1
+            self.blcantidadbox.delete(0, END)
+            self.blcantidadbox.insert(0, str(cantidad))
+
+        productos = buscar_producto_por_codigo(codigo)
+        if not productos:
+            messagebox.showerror("Error", "Producto no encontrado")
+            return
+        infostock = revisar_stock(codigo)
+        if not infostock:
+            messagebox.showerror("Error", "No se pudo obtener información de stock")
+            return
+        if cantidad > infostock:
+            messagebox.showerror("Error", f"Cantidad excede el stock disponible ({infostock})")
+            return
+
+        nombre = productos['nombre']
+        precio= productos['precio_venta']
+        total = precio * cantidad
+        detalles = productos['detalles']
+
+        self.blpreciobox.delete(0, END)
+        self.blpreciobox.insert(0, f"{precio:.2f}")
+        self.bltotalbox.delete(0, END)
+        self.bltotalbox.insert(0, f"{total:.2f}")
+        self.bldetallesbox.delete(0, END)
+        self.bldetallesbox.insert(0, f"{nombre} - {detalles}")
+        
+    def subir(self):
+        codigo = self.blcodigobox.get().strip()
+        detalles = self.bldetallesbox.get().strip()
+        precio = self.blpreciobox.get().strip()
+        cantidad = self.blcantidadbox.get().strip()
+
+        try:
+            cantidad = int(self.blcantidadbox.get().strip())
+        except ValueError:
+            cantidad = 1
+        if not codigo or not precio:
+            messagebox.showwarning("Adverencia", "Primero presione Enter para cargar los datos del producto")
+            return
+        preciol = float(precio)
+        precio_total_linea = preciol * cantidad
+
+        self.lblcodigo = ctk.CTkLabel(self.codigoframe, text=codigo, font=("Arial", 12))
+        self.lblcodigo.pack(pady=2)
+        self.lblcantidad = ctk.CTkLabel(self.cantidadframe, text=cantidad, font=("Arial", 12))
+        self.lblcantidad.pack(pady=2)
+        self.lbldetalles = ctk.CTkLabel(self.detallesframe, text=detalles, font=("Arial", 12))
+        self.lbldetalles.pack(pady=2)
+        self.lblpreciounitario = ctk.CTkLabel(self.preciounitario, text=preciol, font=("Arial", 12))
+        self.lblpreciounitario.pack(pady=2)
+        self.lblpreciototal = ctk.CTkLabel(self.preciototal, text=f"{float(precio_total_linea) * cantidad:.2f}", font=("Arial", 12))
+        self.lblpreciototal.pack(pady=2)
+
+        self.lista_productos.append({
+            "codigo": codigo,
+            "cantidad": cantidad,
+            "precio_total": precio_total_linea
+        })
+
+        self.actualizar_totales_panel()
+        self.cancelar()
+        
     def busquedacodigo(self):
-        pass
+        def al_elegir(codigo_seleccionado):
+            self.blcodigobox.delete(0, 'end')
+            self.blcodigobox.insert(0, codigo_seleccionado)
+            self.enter() 
+        VentanaBusqueda(self, al_seleccionar_callback=al_elegir)
+
+    def actualizar_totales_panel(self):
+        subtotal = sum(p["precio_total"] for p in self.lista_productos)
+        iva = subtotal * 0.16
+        total = subtotal + iva
+        cant_items = sum(p["cantidad"] for p in self.lista_productos)
+
+        self.lsubtotalbox.delete(0, END)
+        self.lsubtotalbox.insert(0, f"${subtotal:.2f}")
+
+        self.ivabox.delete(0, END)
+        self.ivabox.insert(0, f"${iva:.2f}")
+
+        self.ltotalbox.delete(0, END)
+        self.ltotalbox.insert(0, f"${total:.2f}")
+
+        self.lcantidadproductosbox.delete(0, END)
+        self.lcantidadproductosbox.insert(0, str(cant_items))
 
     def borrarproducto(self):
         pass
