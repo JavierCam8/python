@@ -1,7 +1,7 @@
 import customtkinter as ctk
 from tkinter import messagebox, END
 from Conexion import buscar_producto_por_codigo, revisar_stock
-from Busquda import VentanaBusqueda
+from Busquda import VentanaBusqueda, Ventanaborrarproducto
 
 class FrameVentas(ctk.CTkFrame):
     def __init__(self, parent):
@@ -34,6 +34,25 @@ class FrameVentas(ctk.CTkFrame):
             font=("Arial", 22, "bold")
         )
         self.lbtitulo.pack(side="top", pady=(15, 10))
+
+        self.lcliente=ctk.CTkLabel(
+            self.arriba,
+            text="Cliente:",
+            font=("Arial", 12, "bold")
+        )
+        self.lcliente.place(x=20, y=25)
+        self.lclientebox=ctk.CTkEntry(self.arriba, width=150)
+        self.lclientebox.place(x=80, y=25)
+
+        self.lfolio=ctk.CTkLabel(
+            self.arriba,
+            text="No. Folio:",
+            font=("Arial", 12, "bold")
+        )
+        self.lfolio.place(x=250, y=25)
+        self.lfoliobox=ctk.CTkEntry(self.arriba, width=150)
+        self.lfoliobox.place(x=330, y=25)
+
 
         # Contenedor para las 6 columnas
         self.frame_columnas = ctk.CTkFrame(self.arriba, fg_color="transparent")
@@ -449,48 +468,66 @@ class FrameVentas(ctk.CTkFrame):
         self.bldetallesbox.insert(0, f"{nombre} - {detalles}")
         
     def subir(self):
+        """Agrega un producto validado a la lista en memoria y actualiza la tabla"""
         codigo = self.blcodigobox.get().strip()
         detalles = self.bldetallesbox.get().strip()
-        precio = self.blpreciobox.get().strip()
-        cantidad = self.blcantidadbox.get().strip()
+        precio_str = self.blpreciobox.get().strip()
 
         try:
             cantidad = int(self.blcantidadbox.get().strip())
         except ValueError:
             cantidad = 1
-        if not codigo or not precio:
-            messagebox.showwarning("Adverencia", "Primero presione Enter para cargar los datos del producto")
+
+        if not codigo or not precio_str:
+            messagebox.showwarning("Advertencia", "Primero presione Enter para cargar los datos del producto.")
             return
-        preciol = float(precio)
-        precio_total_linea = preciol * cantidad
 
-        self.lblcodigo = ctk.CTkLabel(self.codigoframe, text=codigo, font=("Arial", 12))
-        self.lblcodigo.pack(pady=2)
-        self.lblcantidad = ctk.CTkLabel(self.cantidadframe, text=cantidad, font=("Arial", 12))
-        self.lblcantidad.pack(pady=2)
-        self.lbldetalles = ctk.CTkLabel(self.detallesframe, text=detalles, font=("Arial", 12))
-        self.lbldetalles.pack(pady=2)
-        self.lblpreciounitario = ctk.CTkLabel(self.preciounitario, text=preciol, font=("Arial", 12))
-        self.lblpreciounitario.pack(pady=2)
-        self.lblpreciototal = ctk.CTkLabel(self.preciototal, text=f"{float(precio_total_linea) * cantidad:.2f}", font=("Arial", 12))
-        self.lblpreciototal.pack(pady=2)
+        precio_unitario = float(precio_str)
+        precio_total_linea = precio_unitario * cantidad
 
+        # Agregar el elemento al carrito en RAM
         self.lista_productos.append({
             "codigo": codigo,
             "cantidad": cantidad,
+            "detalles": detalles,
+            "precio_unitario": precio_unitario,
             "precio_total": precio_total_linea
         })
 
-        self.actualizar_totales_panel()
+        # Redibujar la tabla limpia y actualizar montos
+        self.renderizar_tabla()
         self.cancelar()
+
+    def renderizar_tabla(self):
+        """Limpia los widgets visuales de las columnas y los vuelve a dibujar desde self.lista_productos"""
+        columnas = [self.codigoframe, self.cantidadframe, self.detallesframe, self.preciounitario, self.preciototal]
+        
+        # 1. Eliminar etiquetas anteriores (respetando el título del encabezado de la fila 0)
+        for frame in columnas:
+            widgets = frame.winfo_children()
+            for w in widgets[1:]:  # Omite el primer widget que es el título del encabezado
+                w.destroy()
+
+        # 2. Dibujar de nuevo cada producto del carrito
+        for p in self.lista_productos:
+            ctk.CTkLabel(self.codigoframe, text=p["codigo"], font=("Arial", 12)).pack(pady=2)
+            ctk.CTkLabel(self.cantidadframe, text=str(p["cantidad"]), font=("Arial", 12)).pack(pady=2)
+            ctk.CTkLabel(self.detallesframe, text=p["detalles"], font=("Arial", 12)).pack(pady=2)
+            ctk.CTkLabel(self.preciounitario, text=f"${p['precio_unitario']:.2f}", font=("Arial", 12)).pack(pady=2)
+            ctk.CTkLabel(self.preciototal, text=f"${p['precio_total']:.2f}", font=("Arial", 12)).pack(pady=2)
+
+        # 3. Recalcular Subtotal, IVA y Total generales
+        self.actualizar_totales_panel()
         
     def busquedacodigo(self):
-        def al_elegir(codigo_seleccionado):
+        def al_elegir(codigo):
             self.blcodigobox.delete(0, 'end')
-            self.blcodigobox.insert(0, codigo_seleccionado)
-            self.enter() 
-        VentanaBusqueda(self, al_seleccionar_callback=al_elegir)
+            self.blcodigobox.insert(0, codigo)
+            self.enter()
 
+        # Abre en modo ventas (búsqueda general)
+        VentanaBusqueda(self, al_seleccionar_callback=al_elegir, modo="ventas")
+    
     def actualizar_totales_panel(self):
         subtotal = sum(p["precio_total"] for p in self.lista_productos)
         iva = subtotal * 0.16
@@ -509,8 +546,53 @@ class FrameVentas(ctk.CTkFrame):
         self.lcantidadproductosbox.delete(0, END)
         self.lcantidadproductosbox.insert(0, str(cant_items))
 
+    def renderizar_tabla(self):
+        """Limpia los widgets visuales de las columnas y los vuelve a dibujar desde self.lista_productos"""
+        columnas = [self.codigoframe, self.cantidadframe, self.detallesframe, self.preciounitario, self.preciototal]
+        
+        # 1. Eliminar etiquetas anteriores (respetando el título del encabezado de la fila 0)
+        for frame in columnas:
+            widgets = frame.winfo_children()
+            for w in widgets[1:]:  # Omite el primer widget que es el título del encabezado
+                w.destroy()
+
+        # 2. Dibujar de nuevo cada producto del carrito
+        for p in self.lista_productos:
+            ctk.CTkLabel(self.codigoframe, text=p["codigo"], font=("Arial", 12)).pack(pady=2)
+            ctk.CTkLabel(self.cantidadframe, text=str(p["cantidad"]), font=("Arial", 12)).pack(pady=2)
+            ctk.CTkLabel(self.detallesframe, text=p["detalles"], font=("Arial", 12)).pack(pady=2)
+            ctk.CTkLabel(self.preciounitario, text=f"${p['precio_unitario']:.2f}", font=("Arial", 12)).pack(pady=2)
+            ctk.CTkLabel(self.preciototal, text=f"${p['precio_total']:.2f}", font=("Arial", 12)).pack(pady=2)
+
+        # 3. Recalcular Subtotal, IVA y Total generales
+        self.actualizar_totales_panel()
+
     def borrarproducto(self):
-        pass
+        """Elimina un producto del carrito actual (Tecla F2)"""
+        if not self.lista_productos:
+            messagebox.showwarning("Advertencia", "No hay productos en la lista actual.")
+            return
+
+        def al_seleccionar(datos_producto):
+            # Obtener el código enviado por el modal
+            codigo_a_borrar = datos_producto if isinstance(datos_producto, str) else datos_producto.get('codigobarras', '')
+            
+            # Buscar y eliminar la primera coincidencia en el carrito
+            encontrado = False
+            for i, item in enumerate(self.lista_productos):
+                if item["codigo"] == codigo_a_borrar:
+                    self.lista_productos.pop(i)
+                    encontrado = True
+                    break
+            
+            if encontrado:
+                self.renderizar_tabla()
+                messagebox.showinfo("Éxito", f"Producto {codigo_a_borrar} eliminado de la nota.")
+            else:
+                messagebox.showwarning("Aviso", "El producto seleccionado no está en la venta actual.")
+
+        # Abrir el modal de selección de productos a borrar
+        Ventanaborrarproducto(self, al_seleccionar_callback=al_seleccionar)
 
     def cambiarprecio(self):  
         pass

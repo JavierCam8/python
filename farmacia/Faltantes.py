@@ -1,4 +1,6 @@
 import customtkinter as ctk
+# Importamos ambos modales de búsqueda
+from Busquda import VentanaBusqueda, VentanaBusquedaProveedor
 
 class FrameFaltantes(ctk.CTkFrame):
     def __init__(self, parent):
@@ -81,7 +83,7 @@ class FrameFaltantes(ctk.CTkFrame):
         # Campo 1: Proveedor
         self.f_prov = ctk.CTkFrame(self.frame_medio_inner, fg_color="transparent")
         self.f_prov.pack(side="left", padx=5)
-        self.blprovedor = ctk.CTkLabel(self.f_prov, text="Nombre del proveedor:", font=("Arial", 11, "bold"))
+        self.blprovedor = ctk.CTkLabel(self.f_prov, text="ID / Proveedor:", font=("Arial", 11, "bold"))
         self.blprovedor.pack(anchor="w")
         self.blprovedorbox = ctk.CTkEntry(self.f_prov, width=150)
         self.blprovedorbox.pack(pady=(2, 0))
@@ -97,12 +99,12 @@ class FrameFaltantes(ctk.CTkFrame):
         # Campo 3: Cantidad
         self.f_cant = ctk.CTkFrame(self.frame_medio_inner, fg_color="transparent")
         self.f_cant.pack(side="left", padx=5)
-        self.blcantidad = ctk.CTkLabel(self.f_cant, text="Cantidad del producto:", font=("Arial", 11, "bold"))
+        self.blcantidad = ctk.CTkLabel(self.f_cant, text="Cantidad:", font=("Arial", 11, "bold"))
         self.blcantidad.pack(anchor="w")
         self.blcantidadbox = ctk.CTkEntry(self.f_cant, width=120)
         self.blcantidadbox.pack(pady=(2, 0))
 
-        # Campo 4: Detalles (Abarca el resto del espacio libre)
+        # Campo 4: Detalles
         self.f_det = ctk.CTkFrame(self.frame_medio_inner, fg_color="transparent")
         self.f_det.pack(side="left", fill="x", expand=True, padx=5)
         self.bldetalles = ctk.CTkLabel(self.f_det, text="Detalles del producto:", font=("Arial", 11, "bold"))
@@ -214,20 +216,48 @@ class FrameFaltantes(ctk.CTkFrame):
         self.lf3 = ctk.CTkLabel(self.item_f3, text="Cancelar Producto", font=("Arial", 12, "bold"))
         self.lf3.pack(side="left")
 
+    # ====================================================
+    # LÓGICA DE EVENTOS Y ACCIONES
+    # ====================================================
+    def busquedaprovedor(self):
+        """Abre el modal de búsqueda de proveedores (F1)"""
+        def al_elegir(prov):
+            # Recibe el objeto proveedor y coloca su ID en la caja de texto
+            self.blprovedorbox.delete(0, 'end')
+            self.blprovedorbox.insert(0, str(prov.get('id', '')))
+
+        VentanaBusquedaProveedor(self, al_seleccionar_callback=al_elegir)
+
+    def busquedacodigo(self):
+        """Abre el modal de productos filtrado por el proveedor activo (F2)"""
+        id_prov = self.blprovedorbox.get().strip()
+
+        def al_elegir(codigo):
+            self.blcodigobox.delete(0, 'end')
+            self.blcodigobox.insert(0, codigo)
+
+        VentanaBusqueda(
+            self, 
+            al_seleccionar_callback=al_elegir, 
+            modo="faltantes", 
+            id_proveedor=id_prov
+        )
+
+    def cancelar(self):
+        """Limpia todas las cajas del formulario"""
+        self.blprovedorbox.delete(0, 'end')
+        self.blcodigobox.delete(0, 'end')
+        self.blcantidadbox.delete(0, 'end')
+        self.bldetallesbox.delete(0, 'end')
+
+    def borrarproducto(self):
+        """Limpia solo la casilla de producto y cantidad (F3)"""
+        self.blcodigobox.delete(0, 'end')
+        self.blcantidadbox.delete(0, 'end')
+        self.bldetallesbox.delete(0, 'end')
+
     def subir(self):
         pass
 
-    def cancelar(self):
-        pass
-
     def enter(self):
-        pass
-
-    def busquedaprovedor(self):
-        pass
-
-    def busquedacodigo(self):
-        pass
-
-    def borrarproducto(self):
         pass

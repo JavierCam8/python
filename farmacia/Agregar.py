@@ -21,7 +21,7 @@ class FrameAgregar(ctk.CTkFrame):
         # ====================================================
         # COLUMNA IZQUIERDA: FORMULARIO DE REGISTRO
         # ====================================================
-        self.frame_agregar = ctk.CTkFrame(self.contenedor_principal, width=320) 
+        self.frame_agregar = ctk.CTkScrollableFrame(self.contenedor_principal, width=320) 
         self.frame_agregar.pack(side="left", fill="both", expand=True, padx=(0, 5))
 
         self.lbagregar = ctk.CTkLabel(
@@ -30,6 +30,21 @@ class FrameAgregar(ctk.CTkFrame):
             font=("Arial", 15, "bold")
         )
         self.lbagregar.pack(pady=(15, 10), anchor="w", padx=15)
+        self.lbframe2=ctk.CTkLabel(
+            self.frame_agregar,
+            text="Revisar la informacion de un trabajador",
+            font=("Arial", 18, "bold")
+            )
+        self.lbframe2.pack(anchor="w", padx=15, pady=(15, 10))
+
+        self.inelejir=ctk.CTkLabel(
+            self.frame_agregar,
+            text="Seleccione nombre:",
+            font=("Arial", 12, "bold")
+        )
+        self.inelejir.pack(anchor="nw", pady=(0, 5), padx=(0,10))
+        self.innombre=ctk.CTkComboBox(self.frame_agregar, values=[""], width=300)
+        self.innombre.pack(anchor="sw", pady=(0, 5), padx=(0, 10))
 
         # Entradas de texto alineadas a la izquierda (anchor="w")
         self.userbox = self.crear_campo("Agregue Username:")
@@ -88,94 +103,8 @@ class FrameAgregar(ctk.CTkFrame):
         )
         self.btchange.pack(anchor="w", padx=15, pady=2)
 
-        # ====================================================
-        # COLUMNA DERECHA: ESPACIO LIBRE PARA LO QUE VAYAS A AGREGAR
-        # ====================================================
-        self.frame_informacion = ctk.CTkFrame(self.contenedor_principal)
-        self.frame_informacion.pack(side="left", fill="both", expand=True, padx=(5, 0))
-
-        # Texto temporal de marcador de posición
-        self.lbframe2=ctk.CTkLabel(
-            self.frame_informacion,
-            text="Revisar la informacion de un trabajador",
-            font=("Arial", 18, "bold")
-            )
-        self.lbframe2.pack(anchor="w", padx=15, pady=(15, 10))
-
-        self.inelejir=ctk.CTkLabel(
-            self.frame_informacion,
-            text="Seleccione nombre:",
-            font=("Arial", 12, "bold")
-        )
-        self.inelejir.pack(anchor="nw", pady=(0, 5), padx=(0,10))
-        self.innombre=ctk.CTkComboBox(self.frame_informacion, values=[""], width=300)
-        self.innombre.pack(anchor="sw", pady=(0, 5), padx=(0, 10))
-
-        self.inombre=ctk.CTkLabel(
-            self.frame_informacion,
-            text="Nombre:",
-            font=("Arial", 12, "bold")
-        )
-        self.inombre.pack(anchor="nw", pady=5)
-        self.innombrebox=ctk.CTkEntry(self.frame_informacion, width=300)
-        self.innombrebox.pack(anchor="nw", pady=3)
-
-        self.inuser=ctk.CTkLabel(
-            self.frame_informacion,
-            text="Nombre de usuario:",
-            font=("Arial", 12, "bold")
-        )
-        self.inuser.pack(anchor="nw", pady=3)
-        self.inuserbox=ctk.CTkEntry(self.frame_informacion, width=300)
-        self.inuserbox.pack(anchor="nw", pady=5)
-
-        self.intelefono=ctk.CTkLabel(
-            self.frame_informacion,
-            text="Telefono:",
-            font=("Arial", 12, "bold")
-        )
-        self.intelefono.pack(anchor="nw", pady=3)
-        self.intelefonobox=ctk.CTkEntry(self.frame_informacion, width=300)
-        self.intelefonobox.pack(anchor="nw", pady=5)
-
-        self.inrfc=ctk.CTkLabel(
-            self.frame_informacion,
-            text="RFC:",
-            font=("Arial", 12, "bold")
-        )
-        self.inrfc.pack(anchor="nw", pady=3)
-        self.inrfcbox=ctk.CTkEntry(self.frame_informacion, width=300)
-        self.inrfcbox.pack(anchor="nw", pady=5)
-
-        self.inestado=ctk.CTkLabel(
-            self.frame_informacion,
-            text="Estado:",
-            font=("Arial", 12, "bold")
-        )
-        self.inestado.pack(anchor="nw", pady=3)
-        self.inestadobox=ctk.CTkEntry(self.frame_informacion, width=300)
-        self.inestadobox.pack(anchor="nw", pady=5)
-
-        self.inemail=ctk.CTkLabel(
-            self.frame_informacion,
-            text="Email",
-            font=("Arial", 12, "bold")
-        )
-        self.inemail.pack(anchor="nw", pady=3)
-        self.inemailbox=ctk.CTkEntry(self.frame_informacion, width=300)
-        self.inemailbox.pack(anchor="nw", pady=5)
-
-        self.inrango=ctk.CTkLabel(
-            self.frame_informacion,
-            text="Rango",
-            font=("Arial", 12, "bold")
-        )
-        self.inrango.pack(anchor="nw", pady=3)
-        self.inrangobox=ctk.CTkEntry(self.frame_informacion, width=300)
-        self.inrangobox.pack(anchor="nw", pady=5)
-
         self.btdespedir=ctk.CTkButton(
-            self.frame_informacion,
+            self.frame_agregar,
             text="Despedir",
             fg_color="#CC2525",
             hover_color="#5B0A0A",
@@ -185,17 +114,45 @@ class FrameAgregar(ctk.CTkFrame):
         )
         self.btdespedir.pack(anchor="nw", pady=2)
 
-        self.btnguardarcambio=ctk.CTkButton(
-            self.frame_informacion,
-            text="Guardar Cambios",
-            fg_color="#0DAA12",
-            hover_color="#17760B",
-            text_color="#FFFFFF",
-            width=300,
-            command=self.guardarcambios
-        )
-        self.btnguardarcambio.pack(anchor="nw", pady=2)
+        # ====================================================
+        # COLUMNA DERECHA: ESPACIO LIBRE PARA LO QUE VAYAS A AGREGAR
+        # ====================================================
+        self.frame_informacion = ctk.CTkFrame(self.contenedor_principal)
+        self.frame_informacion.pack(side="left", fill="both", expand=True, padx=(5, 0))
 
+        self.ltitulo=ctk.CTkLabel(
+            self.frame_informacion,
+            text="Reportes",
+            font=("Arial", 18, "bold")
+        )
+        self.ltitulo.pack(pady=2)
+
+        self.linproductos=ctk.CTkLabel(
+            self.frame_informacion,
+            text="Cantidad de productos que han entrado:",
+            font=("Arial", 12, "bold")
+        )
+        self.linproductos.pack(pady=2)
+        self.linproductosbox=ctk.CTkEntry(self.frame_informacion, width=200)
+        self.linproductosbox.pack(pady=2)
+
+        self.loutproductos=ctk.CTkLabel(
+            self.frame_informacion,
+            text="Cantidad de productos que han sido vendidos:",
+            font=("Arial", 12, "bold")
+        )
+        self.loutproductos.pack(pady=2)
+        self.loutproductosbox=ctk.CTkEntry(
+        self.frame_informacion, width=200)
+        self.loutproductosbox.pack(pady=2)
+
+        self.lgrafica=ctk.CTkLabel(
+            self.frame_informacion,
+            text="Grafica de ganancias:",
+            font=("Arial", 12, "bold")
+        )
+        self.lgrafica.pack(pady=2)
+        
     def crear_campo(self, texto_label, es_password=False):
         """Método auxiliar para crear etiqueta + entrada alineados a la izquierda"""
         lbl = ctk.CTkLabel(self.frame_agregar, text=texto_label, font=("Arial", 11, "bold"))
